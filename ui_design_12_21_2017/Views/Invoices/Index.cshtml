@@ -1,0 +1,198 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+  
+}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>@ViewData["Title"] - Invoice Summary</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap-multiselect/dist/css/bootstrap-multiselect.css" />
+    <link href="~/lib/select2/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/select2-bootstrap-theme/dist/select2-bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/invoices_index.css">
+    <!--
+    <script src="~/lib/jQuery/dist/jquery.min.js"></script>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+    -->
+    <!-- bootstrap-multiselect -->
+    <!--
+    <script src="~/lib/bootstrap-multiselect/dist/js/bootstrap-multiselect.js"></script>
+    <link href="~/lib/bootstrap-multiselect/dist/css/bootstrap-multiselect.css" rel="stylesheet" />
+    -->
+    <!-- select2 -->
+    <!--
+    <link href="~/lib/select2/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="~/lib/select2/dist/js/select2.min.js"></script>
+
+    <!--
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+    -->
+    <!--
+    <script src="~/js/invoices_index.js"></script>
+    -->
+</head>
+<body>
+    <div class="container-fluid" id="top-container">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="panel panel-block">
+                    <div class="panel-heading">1) Select Customer</div>
+                    <div class="panel-body">
+                        <div class="container-fluid">
+                            <div class="row">Customer</div>
+                            <div class="row" id="select2-customer-container">
+                                <select id="select2-customer" class="select2-box col-sm-12" name="customer">
+                                    <option>HOME CENTERS INC</option>
+                                    <option>CUSTOMER 2</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="panel panel-block">
+                    <div class="panel-heading">2) Select View Month</div>
+                    <div class="panel-body">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="container-fluid">
+                                        <div class="row">View By</div>
+                                        <div class="row" id="select2-viewby-container">
+                                            <select id="select2-viewby" class="select2-box col-sm-12" name="viewby">
+                                                <option>2017-04</option>
+                                                <option>2017-06</option>
+                                                <option>2017-07</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="container-fluid">
+                                        <div class="row">View Months</div>
+                                        <div class="row">
+                                            <select class="bootstrap-multiselect" multiple="multiple" name="viewmonth">
+                                                <option>2017-04</option>
+                                                <option>2017-06</option>
+                                                <option>2017-07</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="panel panel-block">
+                    <div class="panel-heading">3) Select ISO</div>
+                    <div class="panel-body">
+                        <div class="container-fluid">
+                            <div class="row">ISO</div>
+                            <div class="row">
+                                <select class="bootstrap-multiselect" multiple="multiple" name="iso">
+                                    <option>ISO1</option>
+                                    <option>ISO2</option>
+                                    <option>ISO3</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="panel panel-block">
+                    <div class="panel-heading">4) Select Contract and LDC Accounts</div>
+                    <div class="panel-body">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="container-fluid">
+                                        <div class="row">Contract</div>
+                                        <div class="row">
+                                            <select class="bootstrap-multiselect" multiple="multiple" name="contract">
+                                                <option>ESCO-OH-DAYTON-DAY-MAR/17-MAR/18</option>
+                                                <option>ESCO-OH-DAYTON-DAY-APR/17-APR/18</option>
+                                                <option>ESCO-OH-DAYTON-DAY-MAY/17-MAY/18</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="container-fluid">
+                                        <div class="row">LDC Accounts</div>
+                                        <div class="row">
+                                            <select class="bootstrap-multiselect" multiple="multiple" name="ldc-accounts">
+                                                <option>10001234</option>
+                                                <option>10001235</option>
+                                                <option>10001236</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="panel panel-block">
+                    <div class="panel-heading">Invoice Summary</div>
+                    <div class="panel-body">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <button class="btn btn-primary">Search</button>
+                                <button class="btn btn-success">Download Invoices</button>
+                                <button class="btn btn-success">Download Shadow Settlements</button>
+                                <button class="btn btn-success">Approve for Payment</button>
+                                <button class="btn btn-default">Reset</button>
+                            </div>
+                            <div class="row">
+                                <div class="container-fluid" style="margin-top: 10px">
+                                    <table class="table">
+                                        <tr>
+                                            <th></th>
+                                            <th>Contract Group</th>
+                                            <th>Invoice#</th>
+                                            <th>Ldc Acct#</th>
+                                            <th>Due Date</th>
+                                            <th>Status</th>
+                                            <th>Amount</th>
+                                            <th>Balance</th>
+                                            <th>Action</th>
+                                        </tr>
+                                        <tr></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    @section Scripts
+        {
+        <script src="~/lib/bootstrap-multiselect/dist/js/bootstrap-multiselect.js"></script>
+        <script src="~/lib/select2/dist/js/select2.min.js"></script>
+
+        <script src="~/js/invoices_index.js"></script>
+    }
+</body>
+</html>

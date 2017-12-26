@@ -1,0 +1,39 @@
+body {
+    background-color: #D1D1D1;
+}
+#top-container {
+    margin-top: 10px;
+}
+
+.panel.panel-block {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    border: 0;
+}
+
+.panel.panel-block > .panel-heading {
+    background-color: #86E1AA;
+    color: black;
+    font-weight: bold;
+}
+
+.panel.panel-block > .panel-body {
+    background-color: white;
+    color: black;
+    font-weight: bold;
+}
+
+.select2-box {
+    
+}
+
+.select2-selection__rendered {
+    font-weight: normal !important;
+}
+
+.select2-results__options{
+    font-weight: normal !important;
+}
+
+.bootstrap-multiselect {
+
+}

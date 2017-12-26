@@ -1,0 +1,14 @@
+{
+  "name": "asp.net",
+  "private": true,
+  "dependencies": {
+    "jQuery": "3.2.1",
+    "bootstrap-multiselect": "v0.9.13",
+    "select2": "4.0.5",
+    "select2-bootstrap-theme": "0.1.0-beta.10"
+  },
+  "resolutions": {
+    "jQuery": "3.2.1",
+    "select2": "4.0.5"
+  }
+}

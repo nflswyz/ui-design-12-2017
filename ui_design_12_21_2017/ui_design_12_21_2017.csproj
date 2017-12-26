@@ -5,10 +5,25 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
+    <Compile Remove="Migrations\20171222013632_Initial.cs" />
+    <Compile Remove="Migrations\20171222013632_Initial.Designer.cs" />
+    <Compile Remove="Migrations\20171222014338_Initial.cs" />
+    <Compile Remove="Migrations\20171222014338_Initial.Designer.cs" />
+    <Compile Remove="Migrations\20171222014439_Initial.cs" />
+    <Compile Remove="Migrations\20171222014439_Initial.Designer.cs" />
+    <Compile Remove="Migrations\20171222014707_Initial.cs" />
+    <Compile Remove="Migrations\20171222014707_Initial.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Bower" Version="1.3.11" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.0" />
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.1" />
   </ItemGroup>
 
