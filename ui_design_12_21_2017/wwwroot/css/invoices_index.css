@@ -37,3 +37,28 @@ body {
 .bootstrap-multiselect {
 
 }
+
+#search-button-row {
+    margin-top: 10px;
+}
+
+#file-download {
+    display: none;
+}
+
+.btn-not-approved {
+    background-color: green;
+}
+
+.btn-approved {
+    background-color: red;
+}
+
+
+input [type=text] {
+    width: 100%;
+}
+
+#invoice-table {
+    overflow: scroll;
+}

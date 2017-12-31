@@ -11,5 +11,7 @@ namespace ui_design_12_21_2017.Models
         public string Name { get; set; }
 
         public ICollection<Invoice> Invoices { get; set; }
+
+        [Required] public byte[] ShadowSettlement { get; set; }
     }
 }

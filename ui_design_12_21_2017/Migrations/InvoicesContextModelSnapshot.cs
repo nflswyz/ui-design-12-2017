@@ -24,6 +24,9 @@ namespace ui_design_12_21_2017.Migrations
                 {
                     b.Property<string>("Name");
 
+                    b.Property<byte[]>("ShadowSettlement")
+                        .IsRequired();
+
                     b.HasKey("Name");
 
                     b.ToTable("ContractGroups");
@@ -55,13 +58,17 @@ namespace ui_design_12_21_2017.Migrations
 
                     b.Property<int>("CustomerId");
 
+                    b.Property<byte[]>("DetailFile")
+                        .IsRequired();
+
                     b.Property<DateTime>("DueDate");
 
                     b.Property<bool>("IsApproved");
 
                     b.Property<int>("IsoId");
 
-                    b.Property<string>("LdcAccountNumber");
+                    b.Property<string>("LdcAccountNumber")
+                        .IsRequired();
 
                     b.Property<int>("StatusId");
 
@@ -134,7 +141,8 @@ namespace ui_design_12_21_2017.Migrations
 
                     b.HasOne("ui_design_12_21_2017.Models.LdcAccount", "LdcAccount")
                         .WithMany("Invoices")
-                        .HasForeignKey("LdcAccountNumber");
+                        .HasForeignKey("LdcAccountNumber")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("ui_design_12_21_2017.Models.Status", "Status")
                         .WithMany()

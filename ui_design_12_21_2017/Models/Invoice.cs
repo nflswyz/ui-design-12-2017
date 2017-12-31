@@ -14,9 +14,10 @@ namespace ui_design_12_21_2017.Models
         [Required]
         [DataType(DataType.Date)]
         [Display(Name = "Due Date")]
-        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
+        [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = true)]
         public DateTime DueDate { get; set; }
         
+        [Required]
         [ForeignKey("LdcAccount")]
         public string LdcAccountNumber { get; set; }
         [Display(Name = "LDC Acct#")]
@@ -57,5 +58,8 @@ namespace ui_design_12_21_2017.Models
         [Required]
         [Display(Name = "Approved?")]
         public bool IsApproved { get; set; }
+
+        [Required]
+        public byte[] DetailFile { get; set; }
     }
 }
