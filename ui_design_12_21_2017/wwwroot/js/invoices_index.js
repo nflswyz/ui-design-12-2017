@@ -6,24 +6,59 @@
 };
 
 var TABLE_HEADERS = {
-    contractGroup: { text: "Contract Group", column: 1 },
+    contractGroupName: { text: "Contract Group", column: 1 },
     invoiceNumber: { text: "Invoice#", column: 2 },
     ldcAccountNumber: { text: "Ldc Acct#", column: 3 },
-    iso: { text: "ISO", column: 4 },
+    isoName: { text: "ISO", column: 4 },
     dueDate: { text: "Due Date", column: 5 },
     status: { text: "Status", column: 6 },
     amount: { text: "Amount", column: 7 },
     balance: { text: "Balance", column: 8 },
-    action: { text: "Action", column: 9 }
+    isApproved: { text: "Action", column: 9 }
 };
 
-var TABLE_HEADER_COLUMNS = [];
+var TABLE_HEADER_TEXTS = [];
+var TABLE_COLUMN_CELLS_TEXT_ARRAYS = {};
 
-Object.keys(TABLE_HEADERS).forEach(function(key, index) {
-    TABLE_HEADER_COLUMNS[TABLE_HEADERS[key].column - 1] = key;
+Object.keys(TABLE_HEADERS).forEach(function (key, index) {
+    TABLE_HEADER_TEXTS[TABLE_HEADERS[key].column - 1] = key;
+    TABLE_COLUMN_CELLS_TEXT_ARRAYS[key] = [];
 });
 
-var TABLEROW_HIDE_BITS = [];
+//var TABLEROW_HIDE_BITS = [];
+
+function TableColumnFilterBehaviors(dataRowCount) {
+    this.filteringStates = [];
+    this.rowHideCounts = [];
+    for (var i = 0; i < dataRowCount; i++) {
+        this.filteringStates[i] = {};
+        this.rowHideCounts[i] = 0;
+    }
+}
+TableColumnFilterBehaviors.prototype.addFilter = function (filterId) {
+    if (!this.filteringStates[0].hasOwnProperty(filterId)) {
+        for (var i = 0; i < this.filteringStates.length; i++) {
+            this.filteringStates[i][filterId] = true;
+        }
+    }
+}
+TableColumnFilterBehaviors.prototype.hideRow = function (dataRowIndex, filterId) {
+    if (this.filteringStates[dataRowIndex][filterId] === true) {
+        this.rowHideCounts[dataRowIndex]++;
+        this.filteringStates[dataRowIndex][filterId] = false;
+        return this.rowHideCounts[dataRowIndex] === 1 ? true : false;
+    } else return false;
+}
+TableColumnFilterBehaviors.prototype.showRow = function (dataRowIndex, filterId) {
+    if (this.filteringStates[dataRowIndex][filterId] === false) {
+        this.rowHideCounts[dataRowIndex]--;
+        this.filteringStates[dataRowIndex][filterId] = true;
+        return this.rowHideCounts[dataRowIndex] === 0 ? true : false;
+    } else return false;
+}
+
+var INVOICE_TABLE_COLUMN_FILTER_BEHAVIORS = null;
+var TABLE_COLUMN_VALUE_TEXTBOX_FILTERS = [];
 
 $(document).ready(function () {
 
@@ -55,7 +90,7 @@ $(document).ready(function () {
             tableRequest("shadowSettlement");
         });
 
-    $("#btn-reset").click(function(e) {
+    $("#btn-reset").click(function (e) {
         resetTable(true);
     });
 
@@ -126,19 +161,37 @@ function invoiceSearch() {
 }
 
 function tableHeaderInit() {
+    // This approach is not ideal and will be modified in the future.
     var table = $("#invoice-table");
     var firstRow = table[0].rows[0];
     var innerHtml = "";
     var i;
-    for (i = 0; i < TABLE_HEADER_COLUMNS.length; i++) {
-        innerHtml += "<th id='tableheader-" + (i + 1) + "'><div class='row'><label class='col-sm-12'>" + TABLE_HEADERS[TABLE_HEADER_COLUMNS[i]].text + "</label></div><div class='row'><input id='text-filter-" + i  + "' type='text' class='col-sm-12'></div></th>";
+    for (i = 0; i < TABLE_HEADER_TEXTS.length; i++) {
+        innerHtml += "<th id='tableheader-" + (i + 1) + "'><div class='row'><div class='col-xs-10'><label>" + TABLE_HEADERS[TABLE_HEADER_TEXTS[i]].text + "</label></div><div class='col-xs-2'><div class='dropdown'><button type='button' class='btn dropdown-toggle' data-toggle='dropdown'><span class='caret table-column-dropdown-caret'></span></button><ul id='table-header-dropdown-menu-" + i + "' class='dropdown-menu'></ul></div></div></div><div class='row'><input id='table-column-value-textbox-filter-" + i + "' type='text' class='col-xs-12'></div></th>";
     }
     firstRow.innerHTML += innerHtml;
 
-    for (i = 0; i < TABLE_HEADER_COLUMNS.length; i++) {
-        $("#text-filter-" + i).on("input propertychange paste", textFilterWrapper(i));
+    for (i = 0; i < TABLE_HEADER_TEXTS.length; i++) {
+        var filterId = "table-column-value-textbox-filter-" + i;
+        var filterJQueryObj = $("#" + filterId);
+        filterJQueryObj.on("input propertychange paste", tableColumnValueTextboxFilterWrapper(filterJQueryObj[0], i));
+        TABLE_COLUMN_VALUE_TEXTBOX_FILTERS.push(filterId);
     }
 
+    var headerTextArray = [];
+    TABLE_HEADER_TEXTS.forEach(function (value, index) {
+        headerTextArray[index] = TABLE_HEADERS[value].text;
+    });
+    generateCheckboxDropdown($("#filter-dropdown-menu"),
+        headerTextArray,
+        function (iVal) {
+            return "column-selector-" + iVal;
+        },
+        function (srcElement, iVal) {
+            return columnSelectorWrapper(srcElement, iVal);
+        });
+
+    /*
     var filterDropdownMenu = $("#filter-dropdown-menu");
     var filterInnerHtml = "";
     for (i = 0; i < TABLE_HEADER_COLUMNS.length; i++) {
@@ -148,54 +201,102 @@ function tableHeaderInit() {
     for (i = 0; i < TABLE_HEADER_COLUMNS.length; i++) {
         $("#column-selector-" + i).change(columnSelectorWrapper(i));
     }
+    */
 }
 
-function resetTable(withColumnFilters) {
-    for (var i = 0; i < TABLE_HEADER_COLUMNS.length; i++) {
-        $("#text-filter-" + i ).val("").trigger("input");
-        if (withColumnFilters) $("#column-selector-" + i).prop("checked", true).trigger("change");
+function generateCheckboxDropdown(jQueryDropdownMenuObject, checkboxTextArray, inputIdGenerator, changeEventHandler, eventElementCallback) {
+    var innerHtml = "";
+    var i;
+    var idArray = [];
+    for (i = 0; i < checkboxTextArray.length; i++) {
+        idArray[i] = inputIdGenerator(i);
+        innerHtml += "<li><label><input id='" + idArray[i] + "' type='checkbox' checked>" + checkboxTextArray[i] + "</label></li>";
+    }
+    jQueryDropdownMenuObject[0].innerHTML = innerHtml;
+    for (i = 0; i < checkboxTextArray.length; i++) {
+        var jQueryObj = $("#" + idArray[i]);
+        jQueryObj.change(checkboxDropdownEventHandlerWrapper(jQueryObj[0], i, changeEventHandler));
+        if (typeof eventElementCallback != "undefined") eventElementCallback(idArray[i]);
+    }
+}
+
+function checkboxDropdownEventHandlerWrapper(srcElement, i, changeEventCallback) {
+    return changeEventCallback(srcElement, i);
+}
+
+function resetTable(withColumnSelectors) {
+    if (typeof withColumnSelectors == "undefined") withColumnSelectors = true;
+    for (var i = 0; i < TABLE_HEADER_TEXTS.length; i++) {
+        $("#table-column-value-textbox-filter-" + i).val("").trigger("input");
+        if (withColumnSelectors) $("#column-selector-" + i).prop("checked", true).trigger("change");
         $("table#invoice-table td:first-child input[type='checkbox']").prop("checked", false);
     }
 }
 
-function columnSelectorWrapper(i) {
+function columnSelectorWrapper(srcElement, headerIndex) {
     return function (e) {
         var table = $("#invoice-table");
-        var checked = $(this).prop("checked");
+        var checked = $(srcElement).prop("checked");
 
         if (checked) {
-            table.find("td:nth-child(" + (i + 2) + ")").show();
-            table.find("th:nth-child(" + (i + 2) + ")").show();
+            table.find("td:nth-child(" + (headerIndex + 2) + ")").show();
+            table.find("th:nth-child(" + (headerIndex + 2) + ")").show();
         } else {
-            table.find("td:nth-child(" + (i + 2) + ")").hide();
-            table.find("th:nth-child(" + (i + 2) + ")").hide();
+            table.find("td:nth-child(" + (headerIndex + 2) + ")").hide();
+            table.find("th:nth-child(" + (headerIndex + 2) + ")").hide();
         }
     }
 }
 
-function textFilterWrapper(i) {
+function tableColumnValueTextboxFilterWrapper(srcElement, headerIndex) {
     return function (e) {
-        var table = $("#invoice-table");
-        var keyword = $(this).val();
-        for (var j = 1; j < table[0].rows.length; j++) {
-            var cell = table[0].rows[j].cells[i + 1];
-            var cellValue;
-            if (i === 0 || i === 1) {
-                cellValue = cell.childNodes[0].text;
+        if (INVOICE_TABLE_COLUMN_FILTER_BEHAVIORS != null) {
+            var keyword = $(this).val();
+            tableColumnValueFiltering(function (cellValue) {
+                return cellValue.includes(keyword);
+            },
+                headerIndex,
+                srcElement);
+        }
+    }
+}
+
+function tableColumnValueDropdownFilterWrapper(headerIndex) {
+    return function(srcElement, iVal) {
+        return function(e) {
+            var checked = $(srcElement).prop("checked");
+            var keyword = $(srcElement).parent().text();
+            tableColumnValueFiltering(function(cellValue) {
+                    var matched = keyword === cellValue;
+                    return checked ? true : !matched;
+                },
+                headerIndex,
+                srcElement);
+        }
+    }
+}
+
+function tableColumnValueFiltering(filterFunction, headerIndex, srcElement) {
+    var table = $("#invoice-table");
+    var srcElementId = $(srcElement).prop("id");
+    for (var i = 1; i < table[0].rows.length; i++) {
+        var cell = table[0].rows[i].cells[headerIndex + 1];
+        var cellValue;
+        if (TABLE_HEADER_TEXTS[headerIndex] === "contractGroupName" || TABLE_HEADER_TEXTS[headerIndex] === "invoiceNumber") {
+            cellValue = cell.childNodes[0].text;
+        }
+        else if (TABLE_HEADER_TEXTS[headerIndex] === "isApproved") {
+            cellValue = cell.childNodes[0].value;
+        } else {
+            cellValue = cell.innerText;
+        }
+        if (filterFunction(cellValue)) {
+            if (INVOICE_TABLE_COLUMN_FILTER_BEHAVIORS.showRow(i - 1, srcElementId)) {
+                table.find("tr:nth-child(" + (i + 1) + ")").show();
             }
-            else if (i === 8) {
-                cellValue = cell.childNodes[0].value;
-            } else {
-                cellValue = cell.innerText;
-            }
-            if (keyword === "" || cellValue.includes(keyword)) {
-                if (TABLEROW_HIDE_BITS[j - 1] > 0) {
-                    TABLEROW_HIDE_BITS[j - 1] &= ~ (1 << i);
-                    if (TABLEROW_HIDE_BITS[j - 1] === 0) table.find("tr:nth-child(" + (j + 1) + ")").show();
-                }
-            } else {
-                TABLEROW_HIDE_BITS[j - 1] |= 1 << i;
-                table.find("tr:nth-child(" + (j + 1) + ")").hide();
+        } else {
+            if (INVOICE_TABLE_COLUMN_FILTER_BEHAVIORS.hideRow(i - 1, srcElementId)) {
+                table.find("tr:nth-child(" + (i + 1) + ")").hide();
             }
         }
     }
@@ -210,18 +311,67 @@ function updateTable(result) {
     var lastTbody = $("#invoice-table > tbody:last-child");
     var tableRows = "";
     var i;
+    Object.keys(TABLE_HEADERS).forEach(function (key, index) {
+        TABLE_COLUMN_CELLS_TEXT_ARRAYS[key] = [];
+    });
     for (i = 0; i < result.length; i++) {
+        storeCellText(result[i]);
         tableRows += createTableRow(result[i], i + 1);
     }
     lastTbody.after(tableRows);
-    TABLEROW_HIDE_BITS = [];
+    INVOICE_TABLE_COLUMN_FILTER_BEHAVIORS = new TableColumnFilterBehaviors(result.length);
+    for (i = 0; i < TABLE_COLUMN_VALUE_TEXTBOX_FILTERS.length; i++) {
+        INVOICE_TABLE_COLUMN_FILTER_BEHAVIORS.addFilter(TABLE_COLUMN_VALUE_TEXTBOX_FILTERS[i]);
+    }
+    createTableHeaderDropdownMenus();
     for (i = 1; i < table[0].rows.length; i++) {
-        var row = table[0].rows[i];
-        var eventCells = ["contractGroup", "invoiceNumber", "action"];
+        var eventCells = ["contractGroupName", "invoiceNumber", "isApproved"];
         for (var j = 0; j < eventCells.length; j++) {
             var columnNumber = TABLE_HEADERS[eventCells[j]].column;
             $("#invoice-table").on("click", "#table-event-" + i + "-" + columnNumber, cellClickWrapper(i, columnNumber));
         }
+    }
+}
+
+function storeCellText(resultObject) {
+    for (var property in resultObject) {
+        if (TABLE_HEADERS.hasOwnProperty(property)) {
+            TABLE_COLUMN_CELLS_TEXT_ARRAYS[property].push(cellValueToString(resultObject[property], property));
+        }
+    }
+}
+
+function cellValueToString(value, propertyName) {
+    return propertyName === "isApproved" ? value === true ? "Approved" : "Approve for Payment" : value.toString();
+}
+
+function createTableHeaderDropdownMenus() {
+    for (var i = 0; i < TABLE_HEADER_TEXTS.length; i++) {
+        var dropdownMenu = $("#table-header-dropdown-menu-" + i);
+        var cellTextArray = TABLE_COLUMN_CELLS_TEXT_ARRAYS[TABLE_HEADER_TEXTS[i]];
+        if (cellTextArray.length > 0) {
+            cellTextArray.sort();
+            var lastValue = cellTextArray[0];
+            var cellTextNoduplicateArray = [cellTextArray[0]];
+            for (var j = 1; j < cellTextArray.length; j++) {
+                if (cellTextArray[j] !== lastValue) cellTextNoduplicateArray.push(cellTextArray[j]);
+                lastValue = cellTextArray[j];
+            }
+            TABLE_COLUMN_CELLS_TEXT_ARRAYS[TABLE_HEADER_TEXTS[i]] = cellTextNoduplicateArray;
+            generateCheckboxDropdown(dropdownMenu,
+                cellTextNoduplicateArray,
+                dropdownFilterIdWrapper(i),
+                tableColumnValueDropdownFilterWrapper(i),
+                function (eventElementId) {
+                    INVOICE_TABLE_COLUMN_FILTER_BEHAVIORS.addFilter(eventElementId);
+                });
+        }
+    }
+}
+
+function dropdownFilterIdWrapper(headerTextIndex) {
+    return function(iVal) {
+        return "table-column-value-dropdown-filter-" + headerTextIndex + "-" + iVal;
     }
 }
 
@@ -272,6 +422,7 @@ function tableRequest(requestType) {
                 for (var j = 1; j < checkedRows.length; j++) {
                     approve(checkedRows[j]);
                 }
+                resetTable(false);
             };
         } else {
 
@@ -295,7 +446,6 @@ function tableRequest(requestType) {
         oReq.send(formDataObj);
 
 
-        // The following code is abandoned because jQuery doesn't support binary response type.
         /*$.ajax({
             url: form.attr("action"),
             type: form.attr("method"),
@@ -353,6 +503,7 @@ function tablecellRequest(row, col) {
         oReq.responseType = "text";
         oReq.onload = function (oEvent) {
             approve(row);
+            resetTable(false);
         };
     } else {
         oReq.responseType = "blob";
@@ -424,6 +575,8 @@ function generateUrlSearchParams(formData) {
 }
 
 function createTableRow(value, rowNumber) {
+
+    // This approach is not ideal and will be modified in the future.
     var tableRows = "<tr id=\"table-row-" + rowNumber + "\">";
     tableRows += "<td id=\"tablecell-" + rowNumber + "-0\"><input type='checkbox'/></td>";
     tableRows += "<td id=\"tablecell-" + rowNumber + "-1\"><a id='table-event-" + rowNumber + "-1' href='#'>" + value.contractGroupName + "</a></td>";

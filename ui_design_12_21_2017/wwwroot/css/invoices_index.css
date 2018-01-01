@@ -62,3 +62,7 @@ input [type=text] {
 #invoice-table {
     overflow: scroll;
 }
+
+.table-column-dropdown-caret {
+    font-size: 5px;
+}
