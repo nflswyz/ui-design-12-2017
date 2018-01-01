@@ -66,3 +66,7 @@ input [type=text] {
 .table-column-dropdown-caret {
     font-size: 5px;
 }
+
+.dropdown-menu-prevent-close-on-click-inside {
+
+}

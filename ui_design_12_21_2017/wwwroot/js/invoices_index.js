@@ -121,7 +121,11 @@ $(document).ready(function () {
     var viewByMonthSelectLastOption = viewByMonthSelectOptions[viewByMonthSelectOptions.length - 1].value;
     $("#select-view-by-month").val(viewByMonthSelectLastOption).trigger("change");
 
-
+    $(document).on("click",
+        ".dropdown-menu-prevent-close-on-click-inside",
+        function(e) {
+            e.stopPropagation();
+        });
 });
 
 function addAntiForgeryToken(data) {
@@ -167,7 +171,7 @@ function tableHeaderInit() {
     var innerHtml = "";
     var i;
     for (i = 0; i < TABLE_HEADER_TEXTS.length; i++) {
-        innerHtml += "<th id='tableheader-" + (i + 1) + "'><div class='row'><div class='col-xs-10'><label>" + TABLE_HEADERS[TABLE_HEADER_TEXTS[i]].text + "</label></div><div class='col-xs-2'><div class='dropdown'><button type='button' class='btn dropdown-toggle' data-toggle='dropdown'><span class='caret table-column-dropdown-caret'></span></button><ul id='table-header-dropdown-menu-" + i + "' class='dropdown-menu'></ul></div></div></div><div class='row'><input id='table-column-value-textbox-filter-" + i + "' type='text' class='col-xs-12'></div></th>";
+        innerHtml += "<th id='tableheader-" + (i + 1) + "'><div class='row'><div class='col-xs-10'><label>" + TABLE_HEADERS[TABLE_HEADER_TEXTS[i]].text + "</label></div><div class='col-xs-2'><div class='dropdown'><button type='button' class='btn dropdown-toggle' data-toggle='dropdown'><span class='caret table-column-dropdown-caret'></span></button><ul id='table-header-dropdown-menu-" + i + "' class='dropdown-menu dropdown-menu-prevent-close-on-click-inside'></ul></div></div></div><div class='row'><input id='table-column-value-textbox-filter-" + i + "' type='text' class='col-xs-12'></div></th>";
     }
     firstRow.innerHTML += innerHtml;
 
