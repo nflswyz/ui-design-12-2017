@@ -85,7 +85,7 @@ namespace ui_design_12_21_2017.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public FileContentResult TableFileRequests(TableRequest tableRequest)
+        public FileContentResult TableFileRequest(TableRequest tableRequest)
         {
             if (tableRequest.InvoiceNumbers == null || tableRequest.InvoiceNumbers.Length == 0) return null;
 
