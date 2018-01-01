@@ -17,45 +17,25 @@
     <link href="~/lib/select2/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/lib/select2-bootstrap-theme/dist/select2-bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/invoices_index.css">
-    <!--
-    <script src="~/lib/jQuery/dist/jquery.min.js"></script>
 
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
-    -->
-    <!-- bootstrap-multiselect -->
-    <!--
-    <script src="~/lib/bootstrap-multiselect/dist/js/bootstrap-multiselect.js"></script>
-    <link href="~/lib/bootstrap-multiselect/dist/css/bootstrap-multiselect.css" rel="stylesheet" />
-    -->
-    <!-- select2 -->
-    <!--
-    <link href="~/lib/select2/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="~/lib/select2/dist/js/select2.min.js"></script>
-
-    <!--
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
-    -->
-    <!--
-    <script src="~/js/invoices_index.js"></script>
-    -->
 </head>
 <body>
     <div class="container-fluid" id="top-container">
         <form id="__AjaxAntiForgeryForm" action="#" method="post">
             @Html.AntiForgeryToken()
         </form>
-        <a id="file-download"></a>
+        <a id="__fileDownload"></a>
         <form asp-controller="Invoices" asp-action="SearchInvoices" id="search-invoices-form" method="POST">
             <div class="row">
                 <div class="col-md-4">
                     <div class="panel panel-block">
                         <div class="panel-heading">1) Select Customer</div>
                         <div class="panel-body">
-                            <div class="container-fluid">
-                                <div class="row">Customer</div>
-                                <div class="row" id="select-customer-container">
+                            <div class="row">
+                                <div class="col-xs-12">Customer</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-12" id="select-customer-container">
                                     <select type="text" asp-items="(SelectList)@ViewData["CustomerList"]" id="select-customer" class="select2-box col-sm-12" name="customer"></select>
                                 </div>
                             </div>
@@ -66,22 +46,24 @@
                     <div class="panel panel-block">
                         <div class="panel-heading">2) Select View Month</div>
                         <div class="panel-body">
-                            <div class="container-fluid">
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <div class="container-fluid">
-                                            <div class="row">View By</div>
-                                            <div class="row" id="select-view-by-month-container">
-                                                <select asp-items="(SelectList)@ViewData["DueDateList"]" id="select-view-by-month" class="select2-box col-sm-12" onchange="setAvailableMonths(this.value)"></select>
-                                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="row">
+                                        <div class="col-xs-12">View By</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-xs-12" id="select-view-by-month-container">
+                                            <select asp-items="(SelectList)@ViewData["DueDateList"]" id="select-view-by-month" class="select2-box col-sm-12" onchange="setAvailableMonths(this.value)"></select>
                                         </div>
                                     </div>
-                                    <div class="col-sm-6">
-                                        <div class="container-fluid">
-                                            <div class="row">View Months</div>
-                                            <div class="row">
-                                                <select type="text" multiple="multiple" name="months" id="multiselect-month"></select>
-                                            </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="row">
+                                        <div class="col-xs-12">View Months</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-xs-12">
+                                            <select type="text" multiple="multiple" name="months" id="multiselect-month"></select>
                                         </div>
                                     </div>
                                 </div>
@@ -95,9 +77,11 @@
                     <div class="panel panel-block">
                         <div class="panel-heading">3) Select ISO</div>
                         <div class="panel-body">
-                            <div class="container-fluid">
-                                <div class="row">ISO</div>
-                                <div class="row">
+                            <div class="row">
+                                <div class="col-xs-12">ISO</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-12">
                                     <select type="text" asp-items="(SelectList)@ViewData["IsoList"]" class="bootstrap-multiselect" multiple="multiple" name="isos" id="multiselect-iso"></select>
                                 </div>
                             </div>
@@ -108,26 +92,30 @@
                     <div class="panel panel-block">
                         <div class="panel-heading">4) Select Contract and LDC Accounts</div>
                         <div class="panel-body">
-                            <div class="container-fluid">
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <div class="container-fluid">
-                                            <div class="row">Contract</div>
-                                            <div class="row">
-                                                <select type="text" asp-items="(SelectList)@ViewData["ContractList"]" class="bootstrap-multiselect" multiple="multiple" name="contracts" id="multiselect-contract"></select>
-                                            </div>
-                                        </div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="row">
+                                        <div class="col-xs-12">Contract</div>
                                     </div>
-                                    <div class="col-sm-6">
-                                        <div class="container-fluid">
-                                            <div class="row">LDC Accounts</div>
-                                            <div class="row">
-                                                <select type="text" asp-items="(SelectList)@ViewData["LdcAccountList"]" class="bootstrap-multiselect" multiple="multiple" name="ldcaccounts" id="multiselect-ldc-accounts"></select>
-                                            </div>
+                                    <div class="row">
+                                        <div class="col-xs-12">
+                                            <select type="text" asp-items="(SelectList)@ViewData["ContractList"]" class="bootstrap-multiselect" multiple="multiple" name="contracts" id="multiselect-contract"></select>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="row" id="search-button-row">
+                                <div class="col-sm-6">
+                                    <div class="row">
+                                        <div class="col-xs-12">LDC Accounts</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-xs-12">
+                                            <select type="text" asp-items="(SelectList)@ViewData["LdcAccountList"]" class="bootstrap-multiselect" multiple="multiple" name="ldcaccounts" id="multiselect-ldc-accounts"></select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" id="search-button-row">
+                                <div class="col-xs-12">
                                     <button type="submit" id="search-button" class="btn btn-primary pull-right">Search</button>
                                 </div>
                             </div>
@@ -143,24 +131,26 @@
                     <div class="panel panel-block">
                         <div class="panel-heading">Invoice Summary</div>
                         <div class="panel-body">
-                            <div class="container-fluid">
-                                <div class="row">
+
+                            <div class="row">
+                                <div class="col-xs-12">
                                     <input id="btn-download-invoices" type="submit" name="request" value="Download Invoices" class="btn btn-success" />
                                     <input id="btn-download-shadow-settlements" type="submit" name="request" value="Download Shadow Settlements" class="btn btn-success" />
                                     <input id="btn-approve-for-payment" type="submit" name="request" value="Approve for Payment" class="btn btn-success" />
                                     <button id="btn-reset" type="button" class="btn btn-default">Reset</button>
                                     <div class="dropdown"><button class="btn btn-default dropdown-toggle" id="btn-column-filter" data-toggle="dropdown"><span class="glyphicon glyphicon-menu-hamburger"></span></button><ul id="filter-dropdown-menu" class="dropdown-menu"></ul></div>
                                 </div>
-                                <div class="row">
-                                    <div class="container-fluid" style="margin-top: 10px">
-                                        <table class="table table-bordered" id="invoice-table">
-                                            <tr>
-                                                <th id="tableheader-0" class="col-sm-1"></th>
-                                            </tr>
-                                        </table>
-                                    </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-12">
+                                    <table class="table table-striped table-condensed" id="invoice-table">
+                                        <tr>
+                                            <th id="tableheader-0" class="col-sm-1"></th>
+                                        </tr>
+                                    </table>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </form>

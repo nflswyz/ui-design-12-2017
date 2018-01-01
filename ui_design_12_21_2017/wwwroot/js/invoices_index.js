@@ -11,6 +11,8 @@ var TABLE_HEADERS = [
     ["action", "Action"]
 ];
 
+var TABLEROW_HIDE_BITS = [];
+
 $(document).ready(function () {
 
     tableHeaderInit();
@@ -42,7 +44,7 @@ $(document).ready(function () {
         });
 
     $("#btn-reset").click(function(e) {
-        resetTable();
+        resetTable(true);
     });
 
 
@@ -117,7 +119,7 @@ function tableHeaderInit() {
     var innerHtml = "";
     var i;
     for (i = 0; i < TABLE_HEADERS.length; i++) {
-        innerHtml += "<th id='tableheader-" + (i + 1) + "' class='col-sm-1'><div class='container-fluid'><div class='row'><label class='col-sm-12'>" + TABLE_HEADERS[i][1] + "</label></div><div class='row'><input id='text-filter-" + i  + "' type='text' class='col-sm-12'></div></div></th>";
+        innerHtml += "<th id='tableheader-" + (i + 1) + "'><div class='row'><label class='col-sm-12'>" + TABLE_HEADERS[i][1] + "</label></div><div class='row'><input id='text-filter-" + i  + "' type='text' class='col-sm-12'></div></th>";
     }
     firstRow.innerHTML += innerHtml;
 
@@ -128,23 +130,23 @@ function tableHeaderInit() {
     var filterDropdownMenu = $("#filter-dropdown-menu");
     var filterInnerHtml = "";
     for (i = 0; i < TABLE_HEADERS.length; i++) {
-        filterInnerHtml += "<li><input id='checkbox-filter-" + i + "' type='checkbox' checked><label>" + TABLE_HEADERS[i][1] + "</label></li>";
+        filterInnerHtml += "<li><input id='column-selector-" + i + "' type='checkbox' checked><label>" + TABLE_HEADERS[i][1] + "</label></li>";
     }
     filterDropdownMenu[0].innerHTML = filterInnerHtml;
     for (i = 0; i < TABLE_HEADERS.length; i++) {
-        $("#checkbox-filter-" + i).change(columnFilterWrapper(i));
+        $("#column-selector-" + i).change(columnSelectorWrapper(i));
     }
 }
 
-function resetTable() {
+function resetTable(withColumnFilters) {
     for (var i = 0; i < TABLE_HEADERS.length; i++) {
         $("#text-filter-" + i ).val("").trigger("input");
-        $("#checkbox-filter-" + i).prop("checked", true).trigger("change");
+        if (withColumnFilters) $("#column-selector-" + i).prop("checked", true).trigger("change");
         $("table#invoice-table td:first-child input[type='checkbox']").prop("checked", false);
     }
 }
 
-function columnFilterWrapper(i) {
+function columnSelectorWrapper(i) {
     return function (e) {
         var table = $("#invoice-table");
         var checked = $(this).prop("checked");
@@ -175,8 +177,12 @@ function textFilterWrapper(i) {
                 cellValue = cell.innerText;
             }
             if (keyword === "" || cellValue.includes(keyword)) {
-                table.find("tr:nth-child(" + (j + 1) + ")").show();
+                if (TABLEROW_HIDE_BITS[j - 1] > 0) {
+                    TABLEROW_HIDE_BITS[j - 1] &= ~ (1 << i);
+                    if (TABLEROW_HIDE_BITS[j - 1] === 0) table.find("tr:nth-child(" + (j + 1) + ")").show();
+                }
             } else {
+                TABLEROW_HIDE_BITS[j - 1] |= 1 << i;
                 table.find("tr:nth-child(" + (j + 1) + ")").hide();
             }
         }
@@ -184,6 +190,7 @@ function textFilterWrapper(i) {
 }
 
 function updateTable(result) {
+    resetTable(false);
     console.log("Data received:");
     console.log(result);
     var table = $("table#invoice-table");
@@ -195,6 +202,7 @@ function updateTable(result) {
         tableRows += createTableRow(result[i], i + 1);
     }
     lastTbody.after(tableRows);
+    TABLEROW_HIDE_BITS = [];
     for (i = 1; i < table[0].rows.length; i++) {
         var row = table[0].rows[i];
         var eventCells = [1, 2, 9];
@@ -374,7 +382,7 @@ function approve(row) {
 
 function downloadBlob(blob, fileName) {
     var url = window.URL.createObjectURL(blob);
-    var a = $("#file-download")[0];
+    var a = $("#__fileDownload")[0];
     a.href = url;
     a.download = fileName;
     a.click();
