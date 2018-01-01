@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -34,7 +32,7 @@ namespace ui_design_12_21_2017.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult SearchInvoices(InvoiceSearch model)
+        public async Task<IActionResult> SearchInvoicesAsync(InvoiceSearch model)
         {
             var dateSet = new HashSet<string>(model.Months);
             var isoSet = new HashSet<string>(model.Isos);
@@ -57,12 +55,13 @@ namespace ui_design_12_21_2017.Controllers
                                IsoName = invoice.Iso.Name,
                                invoice.IsApproved
                            };
-            return Json(invoices);
+            var invoicesList = await invoices.ToListAsync();
+            return Json(invoicesList);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> TableUpdateRequest(TableRequest tableRequest)
+        public async Task<IActionResult> TableUpdateRequestAsync(TableRequest tableRequest)
         {
             if (tableRequest.InvoiceNumbers == null || tableRequest.InvoiceNumbers.Length == 0) return null;
             if (tableRequest.RequestType == "approval")
@@ -71,7 +70,8 @@ namespace ui_design_12_21_2017.Controllers
                 var targetInvoices = from invoice in _context.Invoices
                                      where targetInvoiceNumbers.Contains(invoice.InvoiceNumber)
                                      select invoice;
-                foreach (var invoice in targetInvoices)
+                var targetInvoicesList = await targetInvoices.ToListAsync();
+                foreach (var invoice in targetInvoicesList)
                 {
                     invoice.IsApproved = true;
                 }
@@ -85,7 +85,7 @@ namespace ui_design_12_21_2017.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public FileContentResult TableFileRequest(TableRequest tableRequest)
+        public async Task<FileContentResult> TableFileRequestAsync(TableRequest tableRequest)
         {
             if (tableRequest.InvoiceNumbers == null || tableRequest.InvoiceNumbers.Length == 0) return null;
 
@@ -97,10 +97,11 @@ namespace ui_design_12_21_2017.Controllers
                 if (tableRequest.InvoiceNumbers.Length == 1)
                 {
                     var targetInvoice = tableRequest.InvoiceNumbers[0];
-                    IEnumerable<byte[]> detailFiles = from invoice in _context.Invoices
+                    var detailFiles = from invoice in _context.Invoices
                                                       where invoice.InvoiceNumber == targetInvoice
                                                       select invoice.DetailFile;
-                    fileContentResult = new FileContentResult(detailFiles.First(), "application/pdf") { FileDownloadName = FileNameValidation($"{targetInvoice}_detail.pdf") };
+                    var targetInvoiceList = await detailFiles.ToListAsync();
+                    fileContentResult = new FileContentResult(targetInvoiceList.First(), "application/pdf") { FileDownloadName = FileNameValidation($"{targetInvoice}_detail.pdf") };
                 }
                 else
                 {
@@ -108,7 +109,8 @@ namespace ui_design_12_21_2017.Controllers
                     var files = from invoice in _context.Invoices
                                 where (targetInvoices.Contains(invoice.InvoiceNumber))
                                 select new FileContent() { Name = $"{invoice.InvoiceNumber}_details.pdf", Content = invoice.DetailFile };
-                    fileContentResult = new FileContentResult(ZipFiles(files), "application/zip") { FileDownloadName = "invoices_detail.zip" };
+                    var filesList = await files.ToListAsync();
+                    fileContentResult = new FileContentResult(ZipFiles(filesList), "application/zip") { FileDownloadName = "invoices_detail.zip" };
                 }
             }
             else if (tableRequest.RequestType == "shadowSettlement")
@@ -116,10 +118,11 @@ namespace ui_design_12_21_2017.Controllers
                 if (tableRequest.InvoiceNumbers.Length == 1)
                 {
                     var targetInvoice = tableRequest.InvoiceNumbers[0];
-                    IEnumerable<byte[]> shadowSettlements = from invoice in _context.Invoices
+                    var shadowSettlements = from invoice in _context.Invoices
                                                             where invoice.InvoiceNumber == targetInvoice
                                                             select invoice.ContractGroup.ShadowSettlement;
-                    fileContentResult = new FileContentResult(shadowSettlements.First(), "text/csv")
+                    var shadowSettlementsList = await shadowSettlements.ToListAsync();
+                    fileContentResult = new FileContentResult(shadowSettlementsList.First(), "text/csv")
                     {
                         FileDownloadName = FileNameValidation($"{targetInvoice}_shadow_settlement.csv")
                     };
@@ -127,19 +130,21 @@ namespace ui_design_12_21_2017.Controllers
                 else
                 {
                     var targetInvoices = new HashSet<string>(tableRequest.InvoiceNumbers);
-                    IEnumerable<string> contractGroupNames = from invoice in _context.Invoices
+                    var contractGroupNames = from invoice in _context.Invoices
                                                              where targetInvoices.Contains(invoice.InvoiceNumber)
                                                              select invoice.ContractGroupName;
-                    var targetContractGroupNames = new HashSet<string>(contractGroupNames);
-                    IEnumerable<FileContent> shadowSettlements = from contractGroup in _context.ContractGroups
+                    var contractGroupNamesList = await contractGroupNames.ToListAsync();
+                    var targetContractGroupNames = new HashSet<string>(contractGroupNamesList);
+                    var shadowSettlements = from contractGroup in _context.ContractGroups
                                                                  where targetContractGroupNames.Contains(contractGroup.Name)
                                                                  select new FileContent()
                                                                  {
                                                                      Name = FileNameValidation($"{contractGroup.Name}_shadow_settlement.csv"),
                                                                      Content = contractGroup.ShadowSettlement
                                                                  };
+                    var shadowSettlementsList = await shadowSettlements.ToListAsync();
                     fileContentResult =
-                        new FileContentResult(ZipFiles(shadowSettlements), "application/zip")
+                        new FileContentResult(ZipFiles(shadowSettlementsList), "application/zip")
                         {
                             FileDownloadName = "shadow_settlements.zip"
                         };

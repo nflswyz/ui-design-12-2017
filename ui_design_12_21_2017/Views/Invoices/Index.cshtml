@@ -25,7 +25,7 @@
             @Html.AntiForgeryToken()
         </form>
         <a id="__fileDownload"></a>
-        <form asp-controller="Invoices" asp-action="SearchInvoices" id="search-invoices-form" method="POST">
+        <form asp-controller="Invoices" asp-action="SearchInvoicesAsync" id="search-invoices-form" method="POST">
             <div class="row">
                 <div class="col-md-4">
                     <div class="panel panel-block">
@@ -126,8 +126,8 @@
         </form>
         <div class="row">
             <div class="col-sm-12">
-                <form asp-controller="Invoices" asp-action="TableUpdateRequest" id="invoice-table-update-form" method="POST"></form>
-                <form asp-controller="Invoices" asp-action="TableFileRequest" id="invoice-table-form" method="POST">
+                <form asp-controller="Invoices" asp-action="TableUpdateRequestAsync" id="invoice-table-update-form" method="POST"></form>
+                <form asp-controller="Invoices" asp-action="TableFileRequestAsync" id="invoice-table-form" method="POST">
                     <div class="panel panel-block">
                         <div class="panel-heading">Invoice Summary</div>
                         <div class="panel-body">
