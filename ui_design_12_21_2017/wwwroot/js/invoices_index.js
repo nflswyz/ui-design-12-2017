@@ -5,11 +5,23 @@
     selectAllJustVisible: true
 };
 
-var TABLE_HEADERS = [
-    ["contract-group", "Contract Group"], ["invoice-number", "Invoice#"], ["ldc-account-number", "Ldc Acct#"],
-    ["iso", "ISO"], ["due-date", "Due Date"], ["status", "Status"], ["amount", "Amount"], ["balance", "Balance"],
-    ["action", "Action"]
-];
+var TABLE_HEADERS = {
+    contractGroup: { text: "Contract Group", column: 1 },
+    invoiceNumber: { text: "Invoice#", column: 2 },
+    ldcAccountNumber: { text: "Ldc Acct#", column: 3 },
+    iso: { text: "ISO", column: 4 },
+    dueDate: { text: "Due Date", column: 5 },
+    status: { text: "Status", column: 6 },
+    amount: { text: "Amount", column: 7 },
+    balance: { text: "Balance", column: 8 },
+    action: { text: "Action", column: 9 }
+};
+
+var TABLE_HEADER_COLUMNS = [];
+
+Object.keys(TABLE_HEADERS).forEach(function(key, index) {
+    TABLE_HEADER_COLUMNS[TABLE_HEADERS[key].column - 1] = key;
+});
 
 var TABLEROW_HIDE_BITS = [];
 
@@ -118,28 +130,28 @@ function tableHeaderInit() {
     var firstRow = table[0].rows[0];
     var innerHtml = "";
     var i;
-    for (i = 0; i < TABLE_HEADERS.length; i++) {
-        innerHtml += "<th id='tableheader-" + (i + 1) + "'><div class='row'><label class='col-sm-12'>" + TABLE_HEADERS[i][1] + "</label></div><div class='row'><input id='text-filter-" + i  + "' type='text' class='col-sm-12'></div></th>";
+    for (i = 0; i < TABLE_HEADER_COLUMNS.length; i++) {
+        innerHtml += "<th id='tableheader-" + (i + 1) + "'><div class='row'><label class='col-sm-12'>" + TABLE_HEADERS[TABLE_HEADER_COLUMNS[i]].text + "</label></div><div class='row'><input id='text-filter-" + i  + "' type='text' class='col-sm-12'></div></th>";
     }
     firstRow.innerHTML += innerHtml;
 
-    for (i = 0; i < TABLE_HEADERS.length; i++) {
+    for (i = 0; i < TABLE_HEADER_COLUMNS.length; i++) {
         $("#text-filter-" + i).on("input propertychange paste", textFilterWrapper(i));
     }
 
     var filterDropdownMenu = $("#filter-dropdown-menu");
     var filterInnerHtml = "";
-    for (i = 0; i < TABLE_HEADERS.length; i++) {
-        filterInnerHtml += "<li><input id='column-selector-" + i + "' type='checkbox' checked><label>" + TABLE_HEADERS[i][1] + "</label></li>";
+    for (i = 0; i < TABLE_HEADER_COLUMNS.length; i++) {
+        filterInnerHtml += "<li><input id='column-selector-" + i + "' type='checkbox' checked><label>" + TABLE_HEADERS[TABLE_HEADER_COLUMNS[i]].text + "</label></li>";
     }
     filterDropdownMenu[0].innerHTML = filterInnerHtml;
-    for (i = 0; i < TABLE_HEADERS.length; i++) {
+    for (i = 0; i < TABLE_HEADER_COLUMNS.length; i++) {
         $("#column-selector-" + i).change(columnSelectorWrapper(i));
     }
 }
 
 function resetTable(withColumnFilters) {
-    for (var i = 0; i < TABLE_HEADERS.length; i++) {
+    for (var i = 0; i < TABLE_HEADER_COLUMNS.length; i++) {
         $("#text-filter-" + i ).val("").trigger("input");
         if (withColumnFilters) $("#column-selector-" + i).prop("checked", true).trigger("change");
         $("table#invoice-table td:first-child input[type='checkbox']").prop("checked", false);
@@ -205,9 +217,10 @@ function updateTable(result) {
     TABLEROW_HIDE_BITS = [];
     for (i = 1; i < table[0].rows.length; i++) {
         var row = table[0].rows[i];
-        var eventCells = [1, 2, 9];
+        var eventCells = ["contractGroup", "invoiceNumber", "action"];
         for (var j = 0; j < eventCells.length; j++) {
-            $("#invoice-table").on("click", "#table-event-" + i + "-" + eventCells[j], cellClickWrapper(i, eventCells[j]));
+            var columnNumber = TABLE_HEADERS[eventCells[j]].column;
+            $("#invoice-table").on("click", "#table-event-" + i + "-" + columnNumber, cellClickWrapper(i, columnNumber));
         }
     }
 }
@@ -280,6 +293,9 @@ function tableRequest(requestType) {
         }
         oReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded; charset=utf-8");
         oReq.send(formDataObj);
+
+
+        // The following code is abandoned because jQuery doesn't support binary response type.
         /*$.ajax({
             url: form.attr("action"),
             type: form.attr("method"),
