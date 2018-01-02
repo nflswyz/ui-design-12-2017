@@ -233,6 +233,7 @@ function resetTable(withColumnSelectors) {
     for (var i = 0; i < TABLE_HEADER_TEXTS.length; i++) {
         $("#table-column-value-textbox-filter-" + i).val("").trigger("input");
         if (withColumnSelectors) $("#column-selector-" + i).prop("checked", true).trigger("change");
+        $("table#invoice-table th .dropdown-menu label input[type='checkbox']").prop("checked", true).trigger("change");
         $("table#invoice-table td:first-child input[type='checkbox']").prop("checked", false);
     }
 }
