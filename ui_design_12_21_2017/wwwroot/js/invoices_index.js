@@ -397,7 +397,7 @@ function tableRequest(requestType) {
     var checkedRows = [];
     for (var i = 1; i < table[0].rows.length; i++) {
 
-        if (table[0].rows[i].childNodes[0].childNodes[0].checked) {
+        if ($("#invoice-table > tr:nth-child(" + (i + 1) + ")").is(":visible") && table[0].rows[i].childNodes[0].childNodes[0].checked) {
             checkedRows.push(i);
             var row = table[0].rows[i];
             var invoiceCol = row.childNodes[2];
